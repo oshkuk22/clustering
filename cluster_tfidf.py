@@ -102,10 +102,8 @@ for list_ in lst__:
     lst_res.extend(list_)
 
 
-print(list_tfidf)
-print('________________')
+# print(list_tfidf)
 for_cloud = " ".join(lst_res)
-print('________________')
 get_cloud(for_cloud)
 model_tfidf = TfidfVectorizer(ngram_range=(2, 5), analyzer='char', tokenizer=str.split)#, max_features=100)
 bag_of_words = model_tfidf.fit_transform(list_tfidf)
@@ -120,6 +118,18 @@ print(pca_comp.shape)
 
 clustering = DBSCAN(eps=2, metric='cosine', min_samples=1).fit(pca_comp)
 print(clustering.labels_)
+
+sum_clusters = []
+for i in range(1, 22):
+    clustering = KMeans(n_clusters=i).fit(pca_comp)
+    sum_clusters.append(clustering.inertia_)
+
+plt.plot(sum_clusters, color='olive', label='Сумма квадратов расстояний до центров кластеров')
+plt.title('Количество кластеров')
+plt.xlabel('Количество кластеров')
+plt.ylabel('Сумма квадратов расстояний выборок до их ближайшего центра кластера')
+plt.legend()
+plt.show()
 
 clustering = KMeans(n_clusters=9).fit(pca_comp)
 data_frame_for_clor_map = pd.DataFrame()
@@ -150,25 +160,30 @@ plt.gcf().canvas.manager.set_window_title('Растояние между век�
 
 ax_3d = fig.add_subplot(projection='3d')
 
-ax_3d.scatter(pca_comp[:, 0], pca_comp[:, 1], pca_comp[:, 2], color=data_frame_for_clor_map.c, label='text')
+ax_3d.scatter(pca_comp[:, 0], pca_comp[:, 1], pca_comp[:, 2], color=data_frame_for_clor_map.c)
 ax_3d.scatter(clustering.cluster_centers_[:, 0], clustering.cluster_centers_[:, 1],
-              clustering.cluster_centers_[:, 2], color='red', label='center_clusters')
+              clustering.cluster_centers_[:, 2], color='red', label='центры кластеров', marker='^')
 ax_3d.set_xlabel('PC1')
 ax_3d.set_ylabel('PC2')
 ax_3d.set_zlabel('PC3')
 ax_3d.legend()
 
 for label, x, y, z in zip(authors, pca_comp[:, 0], pca_comp[:, 1], pca_comp[:, 2]):
-    ax_3d.text(x, y, z, '%s' % (label), size=6, zorder=1, color='k', ha='right',
+    ax_3d.text(x, y, z, '%s' % label, size=6, zorder=1, color='k', ha='right',
                va='bottom', bbox=dict(boxstyle='round,pad=0.3', fc='yellow', alpha=0.5))
 
 plt.show()
 
-plt.scatter(pca_comp[:, 1], pca_comp[:, 2], color=data_frame_for_clor_map.c, label='text')
-plt.scatter(clustering.cluster_centers_[:, 1], clustering.cluster_centers_[:, 2], color='red', label='center_clusters')
+plt.scatter(pca_comp[:, 1], pca_comp[:, 2], color=data_frame_for_clor_map.c)
+plt.scatter(clustering.cluster_centers_[:, 1], clustering.cluster_centers_[:, 2], color='red', label='центры кластеров',
+            marker='^')
+plt.title('Классы текстов')
+plt.xlabel('PC 2')
+plt.ylabel('PC 3')
+plt.legend()
 for label, x, y in zip(authors, pca_comp[:, 1], pca_comp[:, 2]):
     plt.annotate(label, xy=(x, y), xytext=(-5, 5), textcoords='offset points', size=6, ha='right', va='bottom',
-                 bbox=dict(boxstyle='round,pad=0.01', fc='yellow', alpha=0.3))
+                 bbox=dict(boxstyle='round,pad=0.01', fc='white', alpha=0.3))
 plt.show()
 print(clustering.labels_)
 print(clustering.inertia_)
